@@ -4,7 +4,7 @@ import logging
 import os
 import time
 
-from azure.core.exceptions import ResourceExistsError
+from azure.core.exceptions import ResourceExistsError, ResourceNotFoundError
 from azure.storage.blob import BlobServiceClient
 
 logger = logging.getLogger()
@@ -30,18 +30,22 @@ class AzureStorage():
     def load(self, file_name):
         """ load
         """
-        # Instantiate a new BlobClient
-        blob_client = self.container_client.get_blob_client(file_name)
+        try:
+            # Instantiate a new BlobClient
+            blob_client = self.container_client.get_blob_client(file_name)
 
-        # Download Page Blob
-        start = time.perf_counter()
-        with open(file_name, "wb") as my_blob:
-            download_stream = blob_client.download_blob()
-            my_blob.write(download_stream.readall())
+            # Download Page Blob
+            start = time.perf_counter()
+            with open(file_name, "wb") as my_blob:
+                download_stream = blob_client.download_blob()
+                my_blob.write(download_stream.readall())
 
-        # Output elapsed time
-        elapsed_time = time.perf_counter() - start
-        logger.info("Complete load file from Azure Blob Storage: %s sec", elapsed_time)
+            # Output elapsed time
+            elapsed_time = time.perf_counter() - start
+            logger.info("Complete load file from Azure Blob Storage: %s sec", elapsed_time)
+        except ResourceNotFoundError:
+            os.remove(file_name)
+            logger.info("%s is not Found.", file_name)
 
     def save(self, file_name):
         """ save

@@ -130,3 +130,5 @@ dmypy.json
 
 # nkcrawler
 local.sh
+*.db
+*.db-journal
