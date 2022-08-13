@@ -10,8 +10,8 @@ logger = logging.getLogger()
 class DbManipulation():
     """ Database Tool
     """
-    def __init__(self):
-        self.cursor = sqlite3.connect("horse_race.db")
+    def __init__(self, db_name):
+        self.cursor = sqlite3.connect(db_name)
         for table in ["RACE", "ENTRY", "RESULT", "ODDS"]:
             self.cursor.execute(nkparser.create_table_sql(table))
 
