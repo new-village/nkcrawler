@@ -12,4 +12,4 @@ RUN pip install -U pip
 RUN pip install -U setuptools
 RUN pip install -r requirements.txt
 
-#ENTRYPOINT ["python", "run.py"]
+ENTRYPOINT ["python", "run.py"]
