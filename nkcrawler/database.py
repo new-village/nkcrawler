@@ -12,7 +12,7 @@ class DbManipulation():
     """
     def __init__(self, db_name):
         self.cursor = sqlite3.connect(db_name)
-        for table in ["RACE", "ENTRY", "RESULT", "ODDS"]:
+        for table in ["RACE", "ENTRY", "RESULT", "ODDS", "HORSE", "HISTORY"]:
             self.cursor.execute(nkparser.create_table_sql(table))
 
     def insert_row(self, table, rec):

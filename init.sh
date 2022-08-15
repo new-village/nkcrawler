@@ -2,8 +2,9 @@
 export CONNECTION_STRING="YOUR CONNECTION STRING"
 
 # Application Variables
-export YEAR="2021"
-# export RACE_ID="202204020309"
+# export YEAR="2022"
+# export MONTH="1"
+export RACE_ID="202210040211"
 
 # Azure Container Registry
 ## Azure Portal > Container Registry > Access Key
