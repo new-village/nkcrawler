@@ -51,15 +51,17 @@ if __name__ == "__main__":
         # Print Log
         elapsed_time = time.time() - start
         logger.info("Finish to %s loads: %s sec", month, elapsed_time)
+        az.save(db_name)
     elif year is not None and month is None:
-        logger.info("=== START YEAR MODE: %s ===", year)
         for month in range(1,13):
+            logger.info("=== START YEAR MODE: %s/%s ===", year, month)
             start = time.time()
             for race_id in nkparser.race_list(year, month):
                 _load_data(race_id)
             # Print Log
             elapsed_time = time.time() - start
             logger.info("Finish to %s loads: %s sec", month, elapsed_time)
+            az.save(db_name)
     else:
         logger.info("=== START RACE_ID MODE: %s ===", race_id)
         start = time.time()
@@ -67,5 +69,4 @@ if __name__ == "__main__":
         # Print Log
         elapsed_time = time.time() - start
         logger.info("Finish to %s loads: %s sec", month, elapsed_time)
-
-    az.save(db_name)
+        az.save(db_name)
