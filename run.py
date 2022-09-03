@@ -2,71 +2,58 @@
 """
 import logging
 import time
-import os
+from datetime import datetime as dt, timedelta
 
 import nkparser
 
 from nkcrawler import AzureStorage, DbManipulation
 
 
-def _load_data(race_id):
-    for data_type in ["ENTRY", "RESULT", "ODDS"]:
-        race = nkparser.load(data_type, race_id)
-        for record in race.table:
-            dm.insert_row(data_type, record)
-            if data_type == "ENTRY":
-                dm.insert_row("RACE", race.info[0])
-                horse = nkparser.load("HORSE", record["horse_id"])
-                dm.insert_row("HORSE", horse.info[0])
-                for hist in horse.table:
-                    dm.insert_row("HISTORY", hist)
-
 if __name__ == "__main__":
-    # Set Database Name
-    db_name = "horse_race.sqlite"
-    year = os.getenv("YEAR")
-    month = os.getenv("MONTH")
-    race_id = os.getenv("RACE_ID")
-
     # Load logger config & Set Logger
     logging.basicConfig(level='INFO', format='%(asctime)s [%(levelname)s] %(message)s')
     logger = logging.getLogger()
-    # Start logging
-    logger.info('START nkcrawler')
 
     # Load Database file from Azure Blob Storage
+    FILE_NAME = "horse_race.sqlite"
     az = AzureStorage()
-    az.load(db_name)
+    az.load(FILE_NAME)
+    dm = DbManipulation(FILE_NAME)
 
-    # Set Database
-    dm = DbManipulation(db_name)
+    # Create target date
+    date = dm.select_min_date()
+    date = dt.strptime(date, "%Y-%m-%d") - timedelta(days=30) if date is not None else dt.now()
 
-    # Collect Data
-    if year is not None and month is not None:
-        logger.info("=== START YEAR/MONTH MODE: %s/%s ===", year, month)
-        start = time.time()
-        for race_id in nkparser.race_list(year, month):
-            _load_data(race_id)
-            dm.commit()
-        # Print Log
-        elapsed_time = time.time() - start
-        logger.info("Finish to %s loads: %s sec", month, elapsed_time)
-        az.save(db_name)
-    elif year is not None and month is None:
-        for month in range(1,13):
-            logger.info("=== START YEAR MODE: %s/%s ===", year, month)
-            start = time.time()
-            for race_id in nkparser.race_list(year, month):
-                _load_data(race_id)
-            # Print Log
-            elapsed_time = time.time() - start
-            logger.info("Finish to %s loads: %s sec", month, elapsed_time)
-            az.save(db_name)
-    else:
-        logger.info("=== START RACE_ID MODE: %s ===", race_id)
-        start = time.time()
-        _load_data(race_id)
-        # Print Log
-        elapsed_time = time.time() - start
-        logger.info("Finish to %s loads: %s sec", month, elapsed_time)
-        az.save(db_name)
+    # Print Log
+    start = time.time()
+    logger.info("=== START %s/%s COLLECTION ===", date.year, date.month)
+
+    # Load & insert data
+    race_ids = nkparser.race_list(date.year, date.month)
+    total = len(race_ids) + 1
+    for race_id in race_ids:
+        current = race_ids.index(race_id) + 1
+        logger.info("=== COLLECT: %s (%s/%s) ===", race_id, current, total)
+        # collect odds/result/entry
+        for table_name in ["odds", "result", "entry"]:
+            nkdata = nkparser.load(table_name, race_id)
+            dm.bulk_insert(table_name, nkdata.table)
+        dm.bulk_insert("race", nkdata.info)
+        # collect horse
+        for entry in nkdata.table:
+            horse = nkparser.load("horse", entry["horse_id"])
+            dm.bulk_insert("horse", horse.info)
+            dm.bulk_insert("history", horse.table)
+        # collect horse result
+        for race in horse.table:
+            result = nkparser.load("result", race['race_id'])
+            dm.bulk_insert("race", result.info)
+            dm.bulk_insert("result", result.table)
+        dm.commit()
+
+    # Upload db file
+    az.save(FILE_NAME)
+
+    # Print Log
+    elapsed = time.time() - start
+    logger.info("=== FINISH %s/%s COLLECTION: %s sec ===", date.year, date.month, elapsed)

@@ -9,10 +9,9 @@ This application execute below:
 4. Upload SQLite database file to Azure Blob Storage.  
   
 ## Usage
-RECCOMEND: You shoud use async execution like tmux due to long time execution (over 4-5 hours for run).
+RECCOMEND: You shoud use async execution like tmux due to long time execution (over 4-5 hours per month).
 ```sh:
 $ export CONNECTION_STRING="YOUR CONNECTION STRING"
-$ export YEAR="2021"
   
 $ pip install -U pip
 $ pip install -r requirements.txt

@@ -12,16 +12,33 @@ class DbManipulation():
     """
     def __init__(self, db_name):
         self.cursor = sqlite3.connect(db_name)
-        for table in ["RACE", "ENTRY", "RESULT", "ODDS", "HORSE", "HISTORY"]:
+        for table in ["race", "entry", "result", "odds", "horse", "history"]:
             self.cursor.execute(nkparser.create_table_sql(table))
 
-    def insert_row(self, table, rec):
+    def select_min_date(self):
+        """ select minimum year/month from race table
+        :returns: Description of return value
+        :rtype: String or None
+        """
+        cur = self.cursor.cursor()
+        cur.execute('SELECT min(race_date) FROM race')
+        return cur.fetchone()[0]
+
+    def bulk_insert(self, table_name, records):
+        """ insert or replace record to database
+        :param table_name: string of table name such as race, entry and etc.
+        :param records: list of dict type records
+        """
+        for record in records:
+            self.insert_row(table_name, record)
+
+    def insert_row(self, table_name, record):
         """ insert row to database
         """
-        keys = ','.join(rec.keys())
-        qmarks = ','.join(list('?' * len(rec)))
-        values = tuple(rec.values())
-        self.cursor.execute(f'INSERT OR REPLACE INTO {table} ({keys}) VALUES ({qmarks})', values)
+        keys = ','.join(record.keys())
+        qmarks = ','.join(list('?' * len(record)))
+        values = tuple(record.values())
+        self.cursor.execute(f'INSERT OR REPLACE INTO {table_name} ({keys}) VALUES ({qmarks})', values)
 
     def commit(self):
         """ commit
