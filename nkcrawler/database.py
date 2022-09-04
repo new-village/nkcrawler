@@ -21,7 +21,7 @@ class DbManipulation():
         :rtype: String or None
         """
         cur = self.cursor.cursor()
-        cur.execute('SELECT min(race_date) FROM race')
+        cur.execute('SELECT min(t2.race_date) FROM entry t1 inner join race t2 on (t1.race_id = t2.id)')
         return cur.fetchone()[0]
 
     def bulk_insert(self, table_name, records):

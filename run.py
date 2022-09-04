@@ -1,6 +1,7 @@
 """ run.py
 """
 import logging
+import sys
 import time
 from datetime import datetime as dt, timedelta
 
@@ -30,7 +31,7 @@ if __name__ == "__main__":
 
     # Load & insert data
     race_ids = nkparser.race_list(date.year, date.month)
-    total = len(race_ids) + 1
+    total = len(race_ids)
     for race_id in race_ids:
         current = race_ids.index(race_id) + 1
         logger.info("=== COLLECT: %s (%s/%s) ===", race_id, current, total)
@@ -57,3 +58,4 @@ if __name__ == "__main__":
     # Print Log
     elapsed = time.time() - start
     logger.info("=== FINISH %s/%s COLLECTION: %s sec ===", date.year, date.month, elapsed)
+    sys.exit(0)
