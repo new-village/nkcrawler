@@ -19,6 +19,8 @@ class AzureStorage():
         try:
             # Create the BlobServiceClient object which will be used to create a container client
             self.blob_client = BlobServiceClient.from_connection_string(self.connection_string)
+            self.blob_client.max_single_get_size = 128*1024*1024
+            self.blob_client.max_single_put_size = 128*1024*1024
             # Create the container
             self.container_client = self.blob_client.get_container_client(self.container_name)
             self.container_client.create_container()
