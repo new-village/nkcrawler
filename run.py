@@ -35,21 +35,24 @@ if __name__ == "__main__":
     for race_id in race_ids:
         current = race_ids.index(race_id) + 1
         logger.info("=== COLLECT: %s (%s/%s) ===", race_id, current, total)
+
         # collect odds/result/entry
         for table_name in ["odds", "result", "entry"]:
             nkdata = nkparser.load(table_name, race_id)
             dm.bulk_insert(table_name, nkdata.table)
         dm.bulk_insert("race", nkdata.info)
+
         # collect horse
         for entry in nkdata.table:
-            horse = nkparser.load("horse", entry["horse_id"])
-            dm.bulk_insert("horse", horse.info)
-            dm.bulk_insert("history", horse.table)
-            # collect horse result
-            for race in horse.table:
-                result = nkparser.load("result", race['race_id'])
-                dm.bulk_insert("race", result.info)
-                dm.bulk_insert("result", result.table)
+            if dm.is_not_horse_exist(entry["horse_id"]):
+                horse = nkparser.load("horse", entry["horse_id"])
+                dm.bulk_insert("horse", horse.info)
+                dm.bulk_insert("history", horse.table)
+                # collect horse result
+                for race in horse.table:
+                    result = nkparser.load("result", race['race_id'])
+                    dm.bulk_insert("race", result.info)
+                    dm.bulk_insert("result", result.table)
         dm.commit()
 
     # Upload db file

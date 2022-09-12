@@ -24,6 +24,18 @@ class DbManipulation():
         cur.execute('SELECT min(t2.race_date) FROM entry t1 inner join race t2 on (t1.race_id = t2.id)')
         return cur.fetchone()[0]
 
+    def is_not_horse_exist(self, horse_id):
+        """ check horse record existing
+        :param horse_id: horse ID
+        :returns: Description of return value
+        :rtype: String or None
+        """
+        cur = self.cursor.cursor()
+        cur.execute("SELECT rowid FROM horse WHERE id = ?", (horse_id,))
+        if cur.fetchone() is None:
+            return False
+        return True
+
     def bulk_insert(self, table_name, records):
         """ insert or replace record to database
         :param table_name: string of table name such as race, entry and etc.
