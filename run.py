@@ -45,11 +45,11 @@ if __name__ == "__main__":
             horse = nkparser.load("horse", entry["horse_id"])
             dm.bulk_insert("horse", horse.info)
             dm.bulk_insert("history", horse.table)
-        # collect horse result
-        for race in horse.table:
-            result = nkparser.load("result", race['race_id'])
-            dm.bulk_insert("race", result.info)
-            dm.bulk_insert("result", result.table)
+            # collect horse result
+            for race in horse.table:
+                result = nkparser.load("result", race['race_id'])
+                dm.bulk_insert("race", result.info)
+                dm.bulk_insert("result", result.table)
         dm.commit()
 
     # Upload db file
