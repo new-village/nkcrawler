@@ -33,8 +33,11 @@ class DbManipulation():
         cur = self.cursor.cursor()
         cur.execute("SELECT rowid FROM horse WHERE id = ?", (horse_id,))
         if cur.fetchone() is None:
+            # if there is no records, function return True
+            return True
+        else:
+            # if there is some records, function return False
             return False
-        return True
 
     def bulk_insert(self, table_name, records):
         """ insert or replace record to database
